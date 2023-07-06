@@ -1,25 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
 
+public class Program
+{
+    private static void Main(string[] args)
+    {
+        Deck deck = new Deck();
+        Player player = new Player("Игрок");
+
+        bool continueDrawing = true;
+        while (continueDrawing)
+        {
+            Console.WriteLine("Хотите взять карту? (Да/Нет)");
+            string answer = Console.ReadLine();
+
+            if (answer.ToLower() == "да")
+            {
+                player.DrawCard(deck);
+            }
+            else
+            {
+                continueDrawing = false;
+            }
+        }
+
+        player.ShowHand();
+
+        Console.ReadLine();
+    }
+}
+
 public enum Suit
 {
-    Hearts, Diamonds, Clubs, Spades
+    Hearts,
+    Diamonds,
+    Clubs,
+    Spades
 }
 
 public enum Rank
 {
-    Two = 2, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace
+    Two = 2,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    Jack,
+    Queen,
+    King,
+    Ace
 }
 
 public class Card
 {
-    public Suit CardSuit { get; private set; }
-    public Rank CardRank { get; private set; }
+    public Suit Suit { get; private set; }
+    public Rank Rank { get; private set; }
 
-    public Card(Suit cardSuit, Rank cardRank)
+    public Card(Suit suit, Rank rank)
     {
-        CardSuit = cardSuit;
-        CardRank = cardRank;
+        Suit = suit;
+        Rank = rank;
     }
 
     public override string ToString()
@@ -32,47 +76,55 @@ public class Card
             "Валет", "Дама", "Король", "Туз"
         };
 
-        return $"{russianRanks[(int)CardRank - 2]} {russianSuits[(int)CardSuit]}";
+        return $"{russianRanks[(int)Rank - 2]} {russianSuits[(int)Suit]}";
     }
 }
 
 public class Deck
 {
-    private List<Card> Cards;
+    private List<Card> _cards;
 
     public Deck()
     {
-        Cards = new List<Card>();
+        _cards = new List<Card>();
+        InitializeDeck();
+        ShuffleDeck();
+    }
 
+    private void InitializeDeck()
+    {
         foreach (Suit suit in Enum.GetValues(typeof(Suit)))
         {
             foreach (Rank rank in Enum.GetValues(typeof(Rank)))
             {
-                Cards.Add(new Card(suit, rank));
+                _cards.Add(new Card(suit, rank));
             }
         }
+    }
 
+    private void ShuffleDeck()
+    {
         var rng = new Random();
-        int n = Cards.Count;
-        while (n > 1)
+        int deckSize = _cards.Count;
+        while (deckSize > 1)
         {
-            n--;
-            int k = rng.Next(n + 1);
-            Card value = Cards[k];
-            Cards[k] = Cards[n];
-            Cards[n] = value;
+            deckSize--;
+            int randomIndex = rng.Next(deckSize + 1);
+            Card tempCard = _cards[randomIndex];
+            _cards[randomIndex] = _cards[deckSize];
+            _cards[deckSize] = tempCard;
         }
     }
 
     public Card DrawCard()
     {
-        if (Cards.Count == 0)
+        if (_cards.Count == 0)
         {
             throw new InvalidOperationException("Колода пуста");
         }
 
-        Card card = Cards[Cards.Count - 1];
-        Cards.RemoveAt(Cards.Count - 1);
+        Card card = _cards[_cards.Count - 1];
+        _cards.RemoveAt(_cards.Count - 1);
 
         return card;
     }
@@ -80,47 +132,29 @@ public class Deck
 
 public class Player
 {
-    public string PlayerName { get; private set; }
-    public List<Card> PlayerHand { get; private set; }
+    public string Name { get; private set; }
+    private List<Card> _hand;
 
-    public Player(string playerName)
+    public Player(string name)
     {
-        PlayerName = playerName;
-        PlayerHand = new List<Card>();
+        Name = name;
+        _hand = new List<Card>();
     }
 
-    public void DrawCardFromDeck(Deck deck)
+    public void DrawCard(Deck deck)
     {
         Card drawnCard = deck.DrawCard();
-        PlayerHand.Add(drawnCard);
+        _hand.Add(drawnCard);
 
-        Console.WriteLine($"{PlayerName} взял карту: {drawnCard}");
+        Console.WriteLine($"{Name} взял карту: {drawnCard}");
     }
 
-    public void ShowPlayerHand()
+    public void ShowHand()
     {
-        Console.WriteLine($"Карты в руке у {PlayerName}:");
-        foreach (Card card in PlayerHand)
+        Console.WriteLine($"Карты в руке у {Name}:");
+        foreach (Card card in _hand)
         {
             Console.WriteLine(card.ToString());
         }
-    }
-}
-
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        Deck deck = new Deck();
-        Player player = new Player("Игрок");
-
-        for (int i = 0; i < 5; i++)
-        {
-            player.DrawCardFromDeck(deck);
-        }
-
-        player.ShowPlayerHand();
-
-        Console.ReadLine();
     }
 }
